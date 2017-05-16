@@ -9,6 +9,6 @@ class LoansController < ApplicationController
   end
 
   def show
-    render json: Loan.find(params[:id])
+    render json: Loan.includes(:payments).find(params[:id]).default_json
   end
 end
