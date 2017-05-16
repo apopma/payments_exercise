@@ -5,7 +5,7 @@ class LoansController < ApplicationController
   end
 
   def index
-    render json: Loan.all
+    render json: Loan.all.map(&:default_json)
   end
 
   def show
