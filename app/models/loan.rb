@@ -12,6 +12,7 @@ class Loan < ActiveRecord::Base
   end
 
   def outstanding_balance
+    return self.funded_amount unless self.payments.present?
     self.funded_amount - self.payments.map(&:payment_amount).inject(:+)
   end
 end
