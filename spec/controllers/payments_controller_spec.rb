@@ -40,7 +40,50 @@ RSpec.describe PaymentsController, type: :controller do
     end
   end
 
-  xdescribe '#create' do
+  describe '#create' do
+    before(:each) do
+      @loan = Loan.create!(funded_amount: 1000.0)
+      expect(@loan.payments.count).to be_zero
+    end
 
+    it 'returns 400 if no params are given' do
+      post :create
+      expect(response.status).to eq 400
+    end
+
+    it 'returns 404 if a nonexistent loan_id is given' do
+      post :create, loan_id: 10000, payment_amount: 500.0
+      expect(response.status).to eq 404
+    end
+
+    it 'returns 400 if a loan_id is given without a corresponding payment_amount' do
+      post :create, loan_id: @loan.id
+      expect(response.status).to eq 400
+    end
+
+    it 'creates a payment for the given loan at the given payment_amount' do
+      post :create, loan_id: @loan.id, payment_amount: 500.0
+      expect(response.status).to eq 201
+      expect(response.body).to eq @loan.payments.first.to_json
+    end
+
+    it '400s if the payment amount is negative' do
+      post :create, loan_id: @loan.id, payment_amount: -500.0
+      expect(response.status).to eq 400
+      expect(@loan.payments.count).to be_zero
+    end
+
+    it '400s if the payment amount exceeds the loan balance' do
+      post :create, loan_id: @loan.id, payment_amount: 2000.0
+      expect(response.status).to eq 400
+      expect(@loan.payments.count).to be_zero
+    end
+
+    it '500s if something unexpected happens during payment creation' do
+      allow(Payment).to receive(:create!).and_raise('kablooie!')
+      post :create, loan_id: @loan.id, payment_amount: 500.0
+      expect(response.status).to eq 500
+      expect(@loan.payments.count).to be_zero
+    end
   end
 end

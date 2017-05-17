@@ -8,7 +8,6 @@ RSpec.describe Loan, type: :model do
       payment2 = Payment.create!(loan: loan, payment_amount: 10.0, payment_date: DateTime.now)
     end
 
-
     it "calculates using all associated payment amounts" do
       expect(Loan.first.outstanding_balance).to eq 65.0
     end
